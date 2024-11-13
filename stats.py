@@ -32,8 +32,6 @@ ENDPOINT: str = "".join(
     ]
 )
 
-CSV_DIR: t.Final[Path] = Path("csvs")
-
 
 def _get_stats(html: str) -> list[t.Any]:
     row_selector = first(
@@ -109,13 +107,14 @@ def _map_types(df: pd.DataFrame) -> None:
 
 
 def concat_all_csvs(csv_dir: Path, file_name: str) -> None:
-    all_dfs = list(map(lambda csv: pd.read_csv(csv), csv_dir.iterdir()))
+    csvs = filter(lambda p: p.stem != "all" and p.is_file(), csv_dir.iterdir())
+    all_dfs = list(map(lambda csv: pd.read_csv(csv), csvs))
     all_dfs_pd = pd.concat(all_dfs[::-1])
     all_dfs_pd = all_dfs_pd.set_index("rank")
     all_dfs_pd.to_csv(csv_dir / file_name)
 
 
-def main(episodes: t.Sequence[Episode]) -> None:
+def main(episodes: t.Sequence[Episode], csv_dir: Path = Path("csvs")) -> None:
     for ep in episodes:
         for act in list(map(lambda a: a.value, Act)):
             act_stats: list[pd.DataFrame] = []
@@ -138,9 +137,9 @@ def main(episodes: t.Sequence[Episode]) -> None:
             if not act_stats:
                 continue
 
-            pd.concat(act_stats).to_csv(CSV_DIR / f"{ep}{act}.csv")
+            pd.concat(act_stats).to_csv(csv_dir / f"{ep}{act}.csv")
 
-    concat_all_csvs(CSV_DIR, "all.csv")
+    concat_all_csvs(csv_dir, "all.csv")
 
 
 class Rank(int, Enum):
