@@ -1,7 +1,9 @@
 import typing as t
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 __all__: t.Sequence[str] = ("plot_heatmap", "pivot_pick_rate")
 
@@ -51,14 +53,10 @@ def plot_heatmap(
     title: str,
     cmap: str = "rocket",
 ) -> None:
-    import matplotlib.pyplot as plt
-    import seaborn as sns  # type: ignore
-
     sns.reset_orig()
     sns_ = sns
     plt_ = plt
 
-    global RC_PARAMS
     sns_.set_theme(rc=RC_PARAMS)
 
     cbar_kws = {"pad": 0.03, "label": "Average Pick Rate %", "shrink": 0.95}
@@ -89,8 +87,9 @@ def plot_heatmap(
 if __name__ == "__main__":
     pick_rates_dir = CSV_DIR / "pick_rates"
     pick_rates_dir.mkdir(exist_ok=True)
+    csvs = filter(lambda p: p.stem != "all" and p.is_file(), CSV_DIR.iterdir())
 
-    for csv in filter(lambda p: p.stem != "all" and p.is_file(), CSV_DIR.iterdir()):
+    for csv in csvs:
         df = pivot_pick_rate(pd.read_csv(csv, index_col=None))
         df.to_csv(pick_rates_dir / f"pick_rates_{csv.name}")
 

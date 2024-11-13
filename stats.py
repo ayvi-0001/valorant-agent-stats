@@ -16,7 +16,7 @@ __all__: t.Sequence[str] = ("main",)
 
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format=("[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s"),
     datefmt="%m-%d %H:%M:%S",
 )
@@ -36,7 +36,7 @@ ENDPOINT: str = "".join(
 def _get_stats(html: str) -> list[t.Any]:
     row_selector = first(
         Selector(text=html, type="html").xpath(
-            '//*[@class="\u26A1b73efc61 row \u26A1f6341061"]'
+            '//*[@class="\u26a1b73efc61 row \u26a1f6341061"]'
         )
     )
 
@@ -46,11 +46,11 @@ def _get_stats(html: str) -> list[t.Any]:
         step=7,
     )
 
-    kda = row_selector.xpath('//*[@class="\u26A18a7d61c3"]//span/text()').getall()
-    kda_type = lambda t: Decimal(t) if t not in (" ", ", ", "/") else None
+    kda = row_selector.xpath('//*[@class="\u26a18a7d61c3"]//span/text()').getall()
+    kda_type = lambda t: Decimal(t) if t not in (" ", ", ", "/") else None  # noqa: E731
     kda_windowed = list(windowed(seq=[*filter_map(kda_type, kda)], n=3, step=3))
 
-    row = list(map(lambda l: list(flatten(l)), zip_equal(stats, kda_windowed)))
+    row = list(map(lambda l: list(flatten(l)), zip_equal(stats, kda_windowed)))  # noqa: E741
     return row
 
 
@@ -90,8 +90,8 @@ def _generate_df_from_stats(row: list[t.Any]) -> pd.DataFrame:
 
 
 def _map_types(df: pd.DataFrame) -> None:
-    map_rates = lambda col: round(float(col.replace("%", "")) / 100, 4)
-    map_commas = lambda v: int(v.replace(",", ""))
+    map_rates = lambda col: round(float(col.replace("%", "")) / 100, 4)  # noqa: E731
+    map_commas = lambda v: int(v.replace(",", ""))  # noqa: E731
 
     df["win_rate"] = df["win_rate"].apply(map_rates)
     df["pick_rate"] = df["pick_rate"].apply(map_rates)
