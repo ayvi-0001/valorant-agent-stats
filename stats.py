@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import logging
 import typing as t
 from decimal import Decimal
+from enum import Enum
 from pathlib import Path
 
 import httpx
@@ -8,8 +11,6 @@ import numpy as np
 import pandas as pd
 from more_itertools import filter_map, first, flatten, windowed, zip_equal
 from scrapy.selector import Selector  # type: ignore[import-untyped]
-
-from enums import Act, Episode, Rank
 
 __all__: t.Sequence[str] = ("main",)
 
@@ -32,20 +33,6 @@ ENDPOINT: str = "".join(
 )
 
 CSV_DIR: t.Final[Path] = Path("csvs")
-ACTS = Act.three, Act.two, Act.one
-# fmt: off
-RANKS = [
-    Rank.radiant,
-    Rank.immortal3, Rank.immortal2, Rank.immortal1,
-    Rank.ascendant3, Rank.ascendant2, Rank.ascendant1,
-    Rank.diamond3, Rank.diamond2, Rank.diamond1,
-    Rank.platinum3, Rank.platinum2, Rank.platinum1,
-    Rank.gold3, Rank.gold2, Rank.gold1,
-    Rank.silver3, Rank.silver2, Rank.silver1,
-    Rank.bronze3, Rank.bronze2, Rank.bronze1,
-    Rank.iron3, Rank.iron2, Rank.iron1,
-]
-# fmt: on
 
 
 def _get_stats(html: str) -> list[t.Any]:
@@ -130,10 +117,10 @@ def concat_all_csvs(csv_dir: Path, file_name: str) -> None:
 
 def main(episodes: t.Sequence[Episode]) -> None:
     for ep in episodes:
-        for act in ACTS:
+        for act in list(map(lambda a: a.value, Act)):
             act_stats: list[pd.DataFrame] = []
 
-            for rank in RANKS:
+            for rank in list(Rank):
                 url = ENDPOINT % (rank.value, ep + act)
 
                 response: httpx.Response = httpx.get(url)
@@ -154,6 +141,56 @@ def main(episodes: t.Sequence[Episode]) -> None:
             pd.concat(act_stats).to_csv(CSV_DIR / f"{ep}{act}.csv")
 
     concat_all_csvs(CSV_DIR, "all.csv")
+
+
+class Rank(int, Enum):
+    radiant = 27
+    immortal3 = 26
+    immortal2 = 25
+    immortal1 = 24
+    ascendant3 = 23
+    ascendant2 = 22
+    ascendant1 = 21
+    diamond3 = 20
+    diamond2 = 19
+    diamond1 = 18
+    platinum3 = 17
+    platinum2 = 16
+    platinum1 = 15
+    gold3 = 14
+    gold2 = 13
+    gold1 = 12
+    silver3 = 11
+    silver2 = 10
+    silver1 = 9
+    bronze3 = 8
+    bronze2 = 7
+    bronze1 = 6
+    iron3 = 5
+    iron2 = 4
+    iron1 = 3
+
+
+class ValueEnum(Enum):
+    def __get__(self, instance: t.Any, owner: t.Any) -> str:
+        return self.value
+
+
+class Episode(str, ValueEnum):
+    eight = "e8"
+    seven = "e7"
+    six = "e6"
+    five = "e5"
+    four = "e4"
+    three = "e3"
+    two = "e2"
+    one = "e1"
+
+
+class Act(str, ValueEnum):
+    one = "act1"
+    two = "act2"
+    three = "act3"
 
 
 if __name__ == "__main__":
