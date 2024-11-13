@@ -35,9 +35,7 @@ ENDPOINT: str = "".join(
 
 def _get_stats(html: str) -> list[t.Any]:
     row_selector = first(
-        Selector(text=html, type="html").xpath(
-            '//*[@class="\u26a1b73efc61 row \u26a1f6341061"]'
-        )
+        Selector(text=html, type="html").xpath('//*[@class="\u26a1cbe9721c"]')
     )
 
     stats = windowed(
@@ -168,6 +166,7 @@ class Rank(int, Enum):
     iron3 = 5
     iron2 = 4
     iron1 = 3
+    unrated = 0
 
 
 class ValueEnum(Enum):
@@ -176,6 +175,7 @@ class ValueEnum(Enum):
 
 
 class Episode(str, ValueEnum):
+    nine = "e9"
     eight = "e8"
     seven = "e7"
     six = "e6"
@@ -197,6 +197,7 @@ if __name__ == "__main__":
     # csv exports for ep 1~5 are from a previous version of this script.
     main(
         [
+            Episode.nine,
             Episode.eight,
             Episode.seven,
             Episode.six,

@@ -93,8 +93,10 @@ if __name__ == "__main__":
         df = pivot_pick_rate(pd.read_csv(csv, index_col=None))
         df.to_csv(pick_rates_dir / f"pick_rates_{csv.name}")
 
-        plot_heatmap(
-            pivot_pick_rate(pd.read_csv(csv, index_col=None)),
-            heatmap_dir=HEATMAPS_DIR,
-            title=csv.stem,
-        )
+        for cmap in ["rocket", "PuRd"]:
+            plot_heatmap(
+                pivot_pick_rate(pd.read_csv(csv, index_col=None)),
+                heatmap_dir=HEATMAPS_DIR,
+                title=csv.stem,
+                cmap=cmap,
+            )
